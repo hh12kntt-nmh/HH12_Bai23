@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BÀI 23 – ÔN TẬP CHƯƠNG 6: KIM LOẠI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        body { font-family: 'Nunito', sans-serif; }
+        
+        /* Hiệu ứng rung khi chọn sai */
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* Thanh thời gian */
+        .timer-bar { transition: width 1s linear; }
+
+        /* Card styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Định dạng chỉ số hóa học */
+        sub { font-size: 0.75em; vertical-align: sub; }
+        sup { font-size: 0.75em; vertical-align: super; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Màn hình chính: Container -->
+    <div id="app-container" class="w-full max-w-4xl relative">
+        
+        <!-- TRANG CHÀO MỪNG (START SCREEN) -->
+        <div id="start-screen" class="glass-panel rounded-2xl p-8 text-center animate-fade-in block">
+            <div class="mb-6">
+                <i class="fas fa-flask text-6xl text-blue-600 mb-4"></i>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">BÀI 23 – ÔN TẬP CHƯƠNG 6: KIM LOẠI</h1>
+                <p class="text-gray-600 font-semibold">Giáo viên thiết kế: Nguyễn Mạnh Hưng</p>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-xl max-w-md mx-auto shadow-inner">
+                <h3 class="text-lg font-bold text-blue-800 mb-4">Thông tin học sinh</h3>
+                <input type="text" id="student-name" placeholder="Nhập họ và tên của bạn" class="w-full p-3 mb-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="text" id="student-class" placeholder="Nhập lớp (VD: 12A1)" class="w-full p-3 mb-6 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                
+                <button onclick="game.start()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition duration-200 shadow-lg">
+                    <i class="fas fa-play mr-2"></i> BẮT ĐẦU LÀM BÀI
+                </button>
+            </div>
+            
+            <div class="mt-8 flex justify-center">
+                <button onclick="view.showLoginModal()" class="flex items-center gap-2 bg-white border border-blue-200 text-blue-600 font-bold py-2 px-6 rounded-full hover:bg-blue-50 hover:shadow-md transition">
+                    <i class="fas fa-user-tie"></i> Giáo viên: Xem Kết Quả
+                </button>
+            </div>
+            <p class="mt-4 text-xs text-gray-400">25 Câu hỏi | Thời gian thay đổi theo độ khó | Điểm tối đa: 100</p>
+        </div>
+
+        <!-- MÀN HÌNH GAME (GAME SCREEN) -->
+        <div id="game-screen" class="glass-panel rounded-2xl p-6 hidden relative overflow-hidden">
+            <!-- Header Game -->
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl mr-3" id="question-number">1</div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider" id="question-difficulty">Nhận biết</p>
+                        <p class="text-sm font-semibold text-gray-700">Câu hỏi <span id="current-q">1</span>/25</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500">Điểm số</p>
+                    <p class="text-2xl font-bold text-green-600" id="current-score">0</p>
+                </div>
+            </div>
+
+            <!-- Thanh thời gian -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6 relative overflow-hidden">
+                <div id="timer-bar" class="bg-yellow-400 h-2.5 rounded-full timer-bar" style="width: 100%"></div>
+            </div>
+            <div class="absolute top-20 right-6 font-mono text-red-500 font-bold text-lg" id="timer-text">15s</div>
+
+            <!-- Nội dung câu hỏi -->
+            <div class="mb-8">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 leading-relaxed" id="question-text">
+                    Nội dung câu hỏi sẽ hiển thị ở đây...
+                </h2>
+            </div>
+
+            <!-- Các lựa chọn -->
+            <div id="options-container" class="grid grid-cols-1 gap-4 mb-6">
+                <!-- Buttons will be injected here -->
+            </div>
+
+            <!-- Feedback Modal (Overlay) -->
+            <div id="feedback-overlay" class="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center text-center p-6 hidden">
+                <div id="feedback-icon" class="text-6xl mb-4"></div>
+                <h3 id="feedback-title" class="text-2xl font-bold mb-2"></h3>
+                <p id="feedback-explanation" class="text-gray-600 mb-6 max-w-lg mx-auto"></p>
+                <button onclick="game.nextQuestion()" class="bg-blue-600 text-white py-2 px-8 rounded-full font-bold hover:bg-blue-700 transition">
+                    Câu tiếp theo <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MÀN HÌNH KẾT QUẢ (RESULT SCREEN) -->
+        <div id="result-screen" class="glass-panel rounded-2xl p-8 text-center hidden">
+            <div class="mb-6">
+                <img src="https://media.giphy.com/media/26tOZ42Mg6pbTUPHW/giphy.gif" alt="Celebration" class="w-32 h-32 mx-auto rounded-full object-cover mb-4 hidden" id="win-gif">
+                <i class="fas fa-trophy text-6xl text-yellow-500 mb-4 block" id="win-icon"></i>
+                <h2 class="text-3xl font-bold text-gray-800">Hoàn thành bài ôn tập!</h2>
+                <p class="text-gray-600 mt-2">Chúc mừng bạn <span id="res-name" class="font-bold text-blue-600"></span> - Lớp <span id="res-class" class="font-bold"></span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-blue-50 p-4 rounded-xl">
+                    <p class="text-gray-500 text-sm">Tổng điểm</p>
+                    <p class="text-4xl font-bold text-blue-600" id="final-score">0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-xl">
+                    <p class="text-gray-500 text-sm">Số câu đúng</p>
+                    <p class="text-4xl font-bold text-green-600" id="final-correct">0/25</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-xl">
+                    <p class="text-gray-500 text-sm">Xếp loại</p>
+                    <p class="text-2xl font-bold text-purple-600" id="final-rank">Giỏi</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="location.reload()" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition shadow-lg">
+                    <i class="fas fa-redo mr-2"></i> Làm lại bài
+                </button>
+                <button onclick="view.showLoginModal()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition shadow-lg">
+                    <i class="fas fa-list-ol mr-2"></i> Xem Bảng Xếp Hạng
+                </button>
+            </div>
+        </div>
+
+        <!-- MÀN HÌNH ADMIN (TEACHER DASHBOARD) -->
+        <div id="admin-screen" class="glass-panel rounded-2xl p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-chalkboard-teacher mr-2"></i> Bảng Kết Quả Học Sinh</h2>
+                <button onclick="location.reload()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times"></i> Đóng</button>
+            </div>
+            
+            <!-- Công cụ quản lý -->
+            <div class="flex flex-col md:flex-row gap-4 mb-4 justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div class="flex gap-2">
+                    <button onclick="admin.downloadCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-bold shadow-sm transition hover:-translate-y-0.5">
+                        <i class="fas fa-file-excel mr-2"></i> Xuất Excel
+                    </button>
+                    <button onclick="admin.loadData()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 text-sm font-bold shadow-sm transition hover:-translate-y-0.5">
+                        <i class="fas fa-sync-alt mr-2"></i> Cập nhật
+                    </button>
+                </div>
+                
+                <div class="flex gap-2 items-center border-l pl-0 md:pl-4 border-gray-300">
+                    <input type="text" id="del-class-input" placeholder="Nhập tên lớp (VD: 12A1)" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                    <button onclick="admin.confirmDeleteClass()" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 whitespace-nowrap">
+                        <i class="fas fa-eraser mr-2"></i> Xóa lớp này
+                    </button>
+                    <button onclick="admin.confirmClearAll()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold shadow-sm transition hover:-translate-y-0.5 whitespace-nowrap ml-2">
+                        <i class="fas fa-trash-alt mr-2"></i> Xóa tất cả
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-96 overflow-y-auto border rounded-lg bg-white shadow-inner">
+                <table class="min-w-full">
+                    <thead class="bg-gray-100 sticky top-0 shadow-sm z-10">
+                        <tr>
+                            <th class="py-3 px-4 border-b text-left text-xs font-semibold text-gray-600 uppercase">Thời gian</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-semibold text-gray-600 uppercase">Họ Tên</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-semibold text-gray-600 uppercase">Lớp</th>
+                            <th class="py-3 px-4 border-b text-left text-xs font-semibold text-gray-600 uppercase">Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body" class="text-sm divide-y divide-gray-100">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 italic">* Dữ liệu được lưu trên trình duyệt này. Hãy xuất file Excel trước khi xóa cache hoặc đổi máy.</p>
+        </div>
+        
+        <!-- SYSTEM MODAL (Thay thế prompt/confirm/alert) -->
+        <div id="system-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl transform transition-all scale-100 animate-fade-in">
+                <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800">Thông báo</h3>
+                <div id="modal-body" class="mb-6">
+                    <!-- Nội dung động sẽ vào đây -->
+                </div>
+                <div id="modal-actions" class="flex justify-end gap-3">
+                    <!-- Nút bấm sẽ vào đây -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- CẤU TRÚC DỮ LIỆU CÂU HỎI ---
+        const questionBank = [
+            // Mức độ 1: Nhận biết (8 câu - 15s)
+            {
+                id: 1, type: "NB", time: 15,
+                q: "Kim loại nào sau đây có độ dẫn điện tốt nhất?",
+                a: ["Silver (bạc)", "Copper (đồng)", "Gold (vàng)", "Aluminum (nhôm)"],
+                correct: 0,
+                explain: "Thứ tự dẫn điện: Ag > Cu > Au > Al > Fe. Silver (Ag) dẫn điện tốt nhất."
+            },
+            {
+                id: 2, type: "NB", time: 15,
+                q: "Ở điều kiện thường, kim loại nào sau đây tồn tại ở trạng thái lỏng?",
+                a: ["Mercury (thủy ngân)", "Iron (sắt)", "Zinc (kẽm)", "Copper (đồng)"],
+                correct: 0,
+                explain: "Mercury (Hg) là kim loại duy nhất ở thể lỏng ở điều kiện thường."
+            },
+            {
+                id: 3, type: "NB", time: 15,
+                q: "Thép là hợp kim của iron với nguyên tố nào chủ yếu?",
+                a: ["Carbon", "Sulfur", "Oxygen", "Hydrogen"],
+                correct: 0,
+                explain: "Thép là hợp kim của iron với carbon (0,01% - 2%) và một số nguyên tố khác."
+            },
+            {
+                id: 4, type: "NB", time: 15,
+                q: "Dung dịch nào sau đây làm quỳ tím chuyển sang màu xanh?",
+                a: ["NaOH", "HCl", "H<sub>2</sub>SO<sub>4</sub>", "NaCl"],
+                correct: 0,
+                explain: "Dung dịch NaOH là base mạnh, làm quỳ tím hóa xanh."
+            },
+            {
+                id: 5, type: "NB", time: 15,
+                q: "Trong các kim loại sau, kim loại nào có tính khử mạnh nhất?",
+                a: ["K", "Mg", "Al", "Fe"],
+                correct: 0,
+                explain: "Trong dãy hoạt động hóa học, K đứng trước Mg, Al, Fe nên có tính khử mạnh nhất."
+            },
+            {
+                id: 6, type: "NB", time: 15,
+                q: "Hiện tượng kim loại bị phá hủy do tác dụng của các chất trong môi trường gọi là gì?",
+                a: ["Sự ăn mòn kim loại", "Sự điện phân", "Sự tác dụng nhiệt", "Sự khử kim loại"],
+                correct: 0,
+                explain: "Định nghĩa sự ăn mòn kim loại."
+            },
+            {
+                id: 7, type: "NB", time: 15,
+                q: "Kim loại Aluminum (nhôm) bền trong không khí và nước là do có lớp màng nào bảo vệ?",
+                a: ["Lớp oxide Al<sub>2</sub>O<sub>3</sub> bền vững", "Lớp hydroxide Al(OH)<sub>3</sub>", "Lớp muối chloride", "Lớp kim loại nguyên chất"],
+                correct: 0,
+                explain: "Lớp màng oxide Al<sub>2</sub>O<sub>3</sub> rất mỏng, mịn và bền vững bảo vệ nhôm."
+            },
+            {
+                id: 8, type: "NB", time: 15,
+                q: "Công thức hóa học của rỉ sắt (thành phần chính) thường được biểu diễn là?",
+                a: ["Fe<sub>2</sub>O<sub>3</sub>.nH<sub>2</sub>O", "FeO", "Fe<sub>3</sub>O<sub>4</sub>", "Fe(OH)<sub>2</sub>"],
+                correct: 0,
+                explain: "Rỉ sắt là hỗn hợp oxide và hydroxide, thường viết là Fe<sub>2</sub>O<sub>3</sub>.nH<sub>2</sub>O."
+            },
+
+            // Mức độ 2: Thông hiểu (9 câu - 30s)
+            {
+                id: 9, type: "TH", time: 30,
+                q: "Để bảo vệ vỏ tàu biển làm bằng thép, người ta thường gắn vào vỏ tàu (phần ngâm dưới nước) các tấm kim loại nào?",
+                a: ["Zinc (kẽm)", "Copper (đồng)", "Silver (bạc)", "Lead (chì)"],
+                correct: 0,
+                explain: "Dùng phương pháp điện hóa: Zinc có tính khử mạnh hơn Iron nên Zinc đóng vai trò là anode (bị ăn mòn) thay cho vỏ tàu."
+            },
+            {
+                id: 10, type: "TH", time: 30,
+                q: "Trong quá trình ăn mòn điện hóa học, tại cực âm (anode) xảy ra quá trình gì?",
+                a: ["Quá trình oxi hóa kim loại", "Quá trình khử ion kim loại", "Quá trình khử oxygen", "Quá trình nhận electron"],
+                correct: 0,
+                explain: "Tại anode (cực âm) xảy ra quá trình oxi hóa kim loại (M → M<sup>n+</sup> + ne)."
+            },
+            {
+                id: 11, type: "TH", time: 30,
+                q: "Cho đinh sắt (Iron) vào dung dịch CuSO<sub>4</sub>, hiện tượng quan sát được là?",
+                a: ["Đinh sắt tan 1 phần, có màu đỏ bám vào, dung dịch nhạt màu xanh", "Sủi bọt khí không màu", "Không có hiện tượng gì", "Xuất hiện kết tủa trắng"],
+                correct: 0,
+                explain: "Fe đẩy Cu ra khỏi muối: Fe + CuSO<sub>4</sub> → FeSO<sub>4</sub> + Cu (màu đỏ)."
+            },
+            {
+                id: 12, type: "TH", time: 30,
+                q: "Kim loại nào sau đây không tác dụng với dung dịch H<sub>2</sub>SO<sub>4</sub> loãng?",
+                a: ["Cu (đồng)", "Fe (sắt)", "Zn (kẽm)", "Mg (magie)"],
+                correct: 0,
+                explain: "Cu đứng sau H trong dãy hoạt động hóa học nên không tác dụng với acid loãng."
+            },
+            {
+                id: 13, type: "TH", time: 30,
+                q: "Đúng hay Sai: Hợp kim thường cứng hơn và dẫn điện kém hơn kim loại nguyên chất tạo ra nó.",
+                a: ["Đúng", "Sai", "Tùy trường hợp", "Không xác định"],
+                correct: 0,
+                explain: "Cấu trúc mạng tinh thể hợp kim đặc khít hơn làm tăng độ cứng nhưng cản trở chuyển động electron làm giảm dẫn điện."
+            },
+            {
+                id: 14, type: "TH", time: 30,
+                q: "Phản ứng hóa học nào sau đây KHÔNG phải là phản ứng oxi hóa - khử?",
+                a: ["Fe(OH)<sub>2</sub> + 2HCl → FeCl<sub>2</sub> + 2H<sub>2</sub>O", "Fe + 2HCl → FeCl<sub>2</sub> + H<sub>2</sub>", "2Fe + 3Cl<sub>2</sub> → 2FeCl<sub>3</sub>", "Fe + CuSO<sub>4</sub> → FeSO<sub>4</sub> + Cu"],
+                correct: 0,
+                explain: "Phản ứng Fe(OH)<sub>2</sub> + HCl không có sự thay đổi số oxi hóa của các nguyên tố."
+            },
+            {
+                id: 15, type: "TH", time: 30,
+                q: "Cặp chất nào sau đây xảy ra ăn mòn điện hóa khi để trong không khí ẩm?",
+                a: ["Gang (Fe-C)", "Fe nguyên chất", "Cu nguyên chất", "Al nguyên chất"],
+                correct: 0,
+                explain: "Gang là hợp kim Fe-C, có 2 điện cực tiếp xúc nhau trong môi trường điện li (không khí ẩm) nên xảy ra ăn mòn điện hóa."
+            },
+            {
+                id: 16, type: "TH", time: 30,
+                q: "Kim loại Al và Fe đều thụ động hóa (không tác dụng) với dung dịch nào?",
+                a: ["HNO<sub>3</sub> đặc, nguội", "HCl đặc, nóng", "H<sub>2</sub>SO<sub>4</sub> loãng", "NaOH đặc"],
+                correct: 0,
+                explain: "Al và Fe bị thụ động trong HNO<sub>3</sub> đặc, nguội và H<sub>2</sub>SO<sub>4</sub> đặc, nguội."
+            },
+            {
+                id: 17, type: "TH", time: 30,
+                q: "Để làm sạch muối AlCl<sub>3</sub> có lẫn tạp chất CuCl<sub>2</sub>, ta dùng kim loại nào?",
+                a: ["Al dư", "Fe dư", "Cu dư", "Ag dư"],
+                correct: 0,
+                explain: "Dùng Al dư để đẩy Cu ra khỏi dung dịch: 2Al + 3CuCl<sub>2</sub> → 2AlCl<sub>3</sub> + 3Cu. Sau đó lọc bỏ rắn."
+            },
+
+            // Mức độ 3: Vận dụng (8 câu - 120s)
+            {
+                id: 18, type: "VD", time: 120,
+                q: "Tình huống: Một vật làm bằng hợp kim Zn-Cu bị ăn mòn điện hóa trong dung dịch acid. Phát biểu nào ĐÚNG?",
+                a: ["Kẽm (Zn) là cực âm (anode) và bị oxi hóa", "Đồng (Cu) là cực âm (anode) và bị oxi hóa", "Kẽm (Zn) là cực dương (cathode) và bị khử", "Dòng electron chạy từ Cu sang Zn"],
+                correct: 0,
+                explain: "Zn mạnh hơn Cu nên Zn là Anode (cực âm) và bị ăn mòn. Dòng e chạy từ Zn sang Cu."
+            },
+            {
+                id: 19, type: "VD", time: 120,
+                q: "Để phân biệt 3 chất rắn: Al, Fe, Cu đựng trong 3 lọ mất nhãn, ta có thể dùng lần lượt thuốc thử nào?",
+                a: ["Dung dịch NaOH và dung dịch HCl", "Dung dịch HCl", "Nước", "Dung dịch CuCl<sub>2</sub>"],
+                correct: 0,
+                explain: "Dùng NaOH: Al tan (sủi bọt khí). Còn Fe, Cu không tan. Dùng HCl cho 2 mẫu còn lại: Fe tan (sủi bọt), Cu không tan."
+            },
+            {
+                id: 20, type: "VD", time: 120,
+                q: "Tại sao không nên dùng nồi nhôm để nấu canh chua hoặc đựng nước vôi trong?",
+                a: ["Vì Al<sub>2</sub>O<sub>3</sub> và Al lưỡng tính, phản ứng được với cả acid và base", "Vì nhôm dẫn nhiệt kém", "Vì nhôm quá dẻo dễ bị móp", "Vì nhôm phản ứng với muối trong canh"],
+                correct: 0,
+                explain: "Lớp oxide và kim loại Al đều tan được trong acid (canh chua) và base (nước vôi), làm hỏng nồi và lẫn nhôm vào thức ăn."
+            },
+            {
+                id: 21, type: "VD", time: 120,
+                q: "Một sợi dây điện dân dụng thường có lõi bằng đồng và vỏ nhựa. Đồng được chọn chủ yếu vì lí do gì?",
+                a: ["Dẫn điện tốt thứ 2 (sau Ag) và giá thành hợp lý", "Dẫn điện tốt nhất trong các kim loại", "Nhẹ nhất trong các kim loại", "Cứng nhất trong các kim loại"],
+                correct: 0,
+                explain: "Ag dẫn điện tốt nhất nhưng đắt. Cu dẫn điện tốt thứ 2 và giá rẻ hơn nhiều nên được dùng phổ biến."
+            },
+            {
+                id: 22, type: "VD", time: 120,
+                q: "Cho m gam hỗn hợp Mg và Fe vào dung dịch HCl dư thu được 4,958 lít khí H<sub>2</sub> (đkc). Nếu dùng phương pháp bảo toàn electron, số mol electron trao đổi là bao nhiêu?",
+                a: ["0,4 mol", "0,2 mol", "0,1 mol", "0,8 mol"],
+                correct: 0,
+                explain: "nH<sub>2</sub> = 4,958/24,79 = 0,2 mol. Quá trình khử: 2H<sup>+</sup> + 2e → H<sub>2</sub>. Vậy n(e) = 2 * nH<sub>2</sub> = 0,4 mol."
+            },
+            {
+                id: 23, type: "VD", time: 120,
+                q: "Ứng dụng nào sau đây ghép SAI với kim loại tương ứng?",
+                a: ["W (Tungsten) làm dây tóc bóng đèn vì nhiệt độ nóng chảy thấp", "Cu (Copper) làm dây dẫn điện", "Al (Aluminum) làm vật liệu hàng không vì nhẹ", "Pb (Lead) làm tấm chắn tia phóng xạ"],
+                correct: 0,
+                explain: "Sai. Tungsten (W) được dùng làm dây tóc bóng đèn vì có nhiệt độ nóng chảy RẤT CAO (khoảng 3422°C)."
+            },
+            {
+                id: 24, type: "VD", time: 120,
+                q: "Cho luồng khí H<sub>2</sub> dư đi qua ống sứ đựng Fe<sub>2</sub>O<sub>3</sub> nung nóng. Sau khi phản ứng xảy ra hoàn toàn, chất rắn thu được trong ống là?",
+                a: ["Fe", "FeO", "Fe<sub>3</sub>O<sub>4</sub>", "Hỗn hợp Fe và FeO"],
+                correct: 0,
+                explain: "H<sub>2</sub> là chất khử mạnh, ở nhiệt độ cao khử hoàn toàn oxide kim loại (sau Al) về kim loại. Fe<sub>2</sub>O<sub>3</sub> + 3H<sub>2</sub> → 2Fe + 3H<sub>2</sub>O."
+            },
+            {
+                id: 25, type: "VD", time: 120,
+                q: "Xử lý chất thải chứa ion kim loại nặng (Pb<sup>2+</sup>, Hg<sup>2+</sup>) bằng cách nào hiệu quả nhất về mặt hóa học?",
+                a: ["Kết tủa chúng bằng dung dịch Ca(OH)<sub>2</sub> hoặc Na<sub>2</sub>S rồi xử lý bùn", "Đun sôi để bay hơi", "Sục khí Oxygen vào", "Thêm acid mạnh vào"],
+                correct: 0,
+                explain: "Chuyển ion kim loại nặng về dạng hydroxide hoặc muối sulfide không tan để tách ra khỏi nước."
+            }
+        ];
+
+        // --- GLOBAL VARIABLES ---
+        let currentQuestionIdx = 0;
+        let score = 0;
+        let timerInterval;
+        let timeLeft = 0;
+        let studentName = "";
+        let studentClass = "";
+        let shuffledQuestions = [];
+
+        // --- DOM ELEMENTS ---
+        const view = {
+            screens: {
+                start: document.getElementById('start-screen'),
+                game: document.getElementById('game-screen'),
+                result: document.getElementById('result-screen'),
+                admin: document.getElementById('admin-screen')
+            },
+            inputName: document.getElementById('student-name'),
+            inputClass: document.getElementById('student-class'),
+            questionNumber: document.getElementById('question-number'),
+            questionDifficulty: document.getElementById('question-difficulty'),
+            currentQ: document.getElementById('current-q'),
+            currentScore: document.getElementById('current-score'),
+            timerBar: document.getElementById('timer-bar'),
+            timerText: document.getElementById('timer-text'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            feedbackOverlay: document.getElementById('feedback-overlay'),
+            
+            // Modal Elements
+            systemModal: document.getElementById('system-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            modalActions: document.getElementById('modal-actions'),
+            
+            showScreen(screenName) {
+                Object.values(this.screens).forEach(el => el.classList.add('hidden'));
+                this.screens[screenName].classList.remove('hidden');
+                this.screens[screenName].classList.add('block');
+            },
+            
+            // Hàm hiển thị Modal chung
+            showModal(title, content, actions) {
+                this.modalTitle.innerText = title;
+                this.modalBody.innerHTML = content;
+                this.modalActions.innerHTML = actions;
+                this.systemModal.classList.remove('hidden');
+            },
+
+            hideModal() {
+                this.systemModal.classList.add('hidden');
+            },
+
+            // Thay thế prompt mặc định
+            showLoginModal() {
+                const content = `<input type="password" id="admin-pass-input" placeholder="Nhập mật khẩu (Gợi ý: admin)" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                 <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Mật khẩu không đúng!</p>`;
+                const actions = `
+                    <button onclick="view.hideModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Hủy</button>
+                    <button onclick="view.handleLogin()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">Đăng nhập</button>
+                `;
+                this.showModal("Đăng nhập Giáo Viên", content, actions);
+                
+                // Focus vào input
+                setTimeout(() => document.getElementById('admin-pass-input').focus(), 100);
+            },
+
+            handleLogin() {
+                const pass = document.getElementById('admin-pass-input').value;
+                if (pass === "admin") {
+                    this.hideModal();
+                    admin.loadData();
+                    this.showScreen('admin');
+                } else {
+                    document.getElementById('login-error').classList.remove('hidden');
+                    document.getElementById('admin-pass-input').classList.add('border-red-500');
+                    document.getElementById('admin-pass-input').value = "";
+                }
+            },
+            
+            // Thay thế alert
+            showAlert(message) {
+                 const actions = `<button onclick="view.hideModal()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Đóng</button>`;
+                 this.showModal("Thông báo", `<p class="text-gray-700">${message}</p>`, actions);
+            },
+
+            updateTimerUI(percent, time) {
+                this.timerBar.style.width = `${percent}%`;
+                this.timerText.innerText = `${time}s`;
+                if(percent < 30) {
+                    this.timerBar.classList.remove('bg-yellow-400', 'bg-green-500');
+                    this.timerBar.classList.add('bg-red-500');
+                } else {
+                    this.timerBar.classList.remove('bg-red-500', 'bg-green-500');
+                    this.timerBar.classList.add('bg-yellow-400');
+                }
+            },
+
+            showFeedback(isCorrect, explanation) {
+                const overlay = this.feedbackOverlay;
+                const icon = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const exp = document.getElementById('feedback-explanation');
+
+                overlay.classList.remove('hidden');
+                
+                if (isCorrect) {
+                    icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                    title.innerText = "CHÍNH XÁC!";
+                    title.className = "text-3xl font-bold mb-2 text-green-600";
+                } else {
+                    icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                    title.innerText = "SAI RỒI!";
+                    title.className = "text-3xl font-bold mb-2 text-red-600";
+                }
+                // Sử dụng innerHTML để hiển thị thẻ sub/sup trong lời giải thích
+                exp.innerHTML = `<span class="font-bold">Giải thích:</span> ${explanation}`;
+            }
+        };
+
+        // --- GAME LOGIC ---
+        const game = {
+            start() {
+                studentName = view.inputName.value.trim();
+                studentClass = view.inputClass.value.trim();
+
+                if (!studentName || !studentClass) {
+                    view.showAlert("Vui lòng nhập đầy đủ Họ tên và Lớp!");
+                    return;
+                }
+
+                // Shuffle questions
+                shuffledQuestions = [...questionBank].sort(() => 0.5 - Math.random());
+                currentQuestionIdx = 0;
+                score = 0;
+                view.currentScore.innerText = "0";
+                view.showScreen('game');
+                this.loadQuestion();
+            },
+
+            loadQuestion() {
+                // Reset feedback
+                view.feedbackOverlay.classList.add('hidden');
+                
+                if (currentQuestionIdx >= shuffledQuestions.length) {
+                    this.endGame();
+                    return;
+                }
+
+                const qData = shuffledQuestions[currentQuestionIdx];
+                
+                // UI Updates
+                view.questionNumber.innerText = currentQuestionIdx + 1;
+                view.currentQ.innerText = currentQuestionIdx + 1;
+                // Sử dụng innerHTML thay vì innerText để hiển thị thẻ sub/sup
+                view.questionText.innerHTML = qData.q;
+                
+                // Difficulty Label
+                let diffLabel = "Nhận biết";
+                let diffColor = "text-green-600";
+                if (qData.type === "TH") { diffLabel = "Thông hiểu"; diffColor = "text-blue-600"; }
+                if (qData.type === "VD") { diffLabel = "Vận dụng"; diffColor = "text-purple-600"; }
+                view.questionDifficulty.innerText = diffLabel;
+                view.questionDifficulty.className = `text-xs uppercase font-bold tracking-wider ${diffColor}`;
+
+                // Options Shuffling
+                const options = qData.a.map((opt, index) => ({ text: opt, originalIndex: index }));
+                options.sort(() => Math.random() - 0.5);
+
+                view.optionsContainer.innerHTML = "";
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition font-semibold text-gray-700 active:scale-95";
+                    // Sử dụng innerHTML cho các đáp án
+                    btn.innerHTML = `<span class="font-bold mr-2 text-blue-500">${String.fromCharCode(65 + options.indexOf(opt))}.</span> ${opt.text}`;
+                    btn.onclick = () => this.checkAnswer(opt.originalIndex);
+                    view.optionsContainer.appendChild(btn);
+                });
+
+                // Timer Setup
+                timeLeft = qData.time;
+                const totalTime = qData.time;
+                view.updateTimerUI(100, timeLeft);
+                
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    const percent = (timeLeft / totalTime) * 100;
+                    view.updateTimerUI(percent, timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        this.handleTimeOut();
+                    }
+                }, 1000);
+            },
+
+            checkAnswer(selectedIndex) {
+                clearInterval(timerInterval);
+                const qData = shuffledQuestions[currentQuestionIdx];
+                const isCorrect = selectedIndex === qData.correct;
+
+                if (isCorrect) {
+                    score += 4; 
+                    view.currentScore.innerText = score;
+                }
+
+                view.showFeedback(isCorrect, qData.explain);
+            },
+
+            handleTimeOut() {
+                const qData = shuffledQuestions[currentQuestionIdx];
+                view.showFeedback(false, "Hết giờ! " + qData.explain);
+            },
+
+            nextQuestion() {
+                currentQuestionIdx++;
+                this.loadQuestion();
+            },
+
+            endGame() {
+                // Lưu kết quả ngay lập tức
+                admin.saveResult({
+                    name: studentName,
+                    class: studentClass,
+                    score: score,
+                    time: new Date().toLocaleString('vi-VN')
+                });
+
+                view.showScreen('result');
+                document.getElementById('res-name').innerText = studentName;
+                document.getElementById('res-class').innerText = studentClass;
+                document.getElementById('final-score').innerText = score;
+                document.getElementById('final-correct').innerText = `${score/4}/25`;
+
+                // Rank
+                let rank = "";
+                if (score >= 90) rank = "Xuất sắc";
+                else if (score >= 80) rank = "Giỏi";
+                else if (score >= 65) rank = "Khá";
+                else if (score >= 50) rank = "Trung bình";
+                else rank = "Cần cố gắng";
+                
+                const rankEl = document.getElementById('final-rank');
+                rankEl.innerText = rank;
+                
+                if(score >= 80) {
+                    document.getElementById('win-gif').classList.remove('hidden');
+                    document.getElementById('win-icon').classList.add('hidden');
+                } else {
+                    document.getElementById('win-gif').classList.add('hidden');
+                    document.getElementById('win-icon').classList.remove('hidden');
+                }
+            }
+        };
+
+        // --- ADMIN / LOCAL STORAGE LOGIC ---
+        const admin = {
+            storageKey: 'chemistry_game_results_v1',
+
+            saveResult(data) {
+                let results = JSON.parse(localStorage.getItem(this.storageKey) || "[]");
+                results.push(data);
+                localStorage.setItem(this.storageKey, JSON.stringify(results));
+            },
+
+            loadData() {
+                let results = JSON.parse(localStorage.getItem(this.storageKey) || "[]");
+                // Sắp xếp theo điểm giảm dần
+                results.sort((a, b) => b.score - a.score);
+                
+                const tbody = document.getElementById('result-table-body');
+                tbody.innerHTML = "";
+                
+                if (results.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">Chưa có dữ liệu kết quả nào.</td></tr>`;
+                    return;
+                }
+
+                results.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 border-b";
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 text-gray-600">${r.time}</td>
+                        <td class="py-3 px-4 font-bold text-gray-800">${r.name}</td>
+                        <td class="py-3 px-4 text-gray-600">${r.class}</td>
+                        <td class="py-3 px-4 font-bold text-blue-600">${r.score}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            downloadCSV() {
+                let results = JSON.parse(localStorage.getItem(this.storageKey) || "[]");
+                if (results.length === 0) {
+                    view.showAlert("Chưa có dữ liệu để xuất!");
+                    return;
+                }
+
+                // Thêm BOM (\uFEFF) để Excel nhận diện đúng tiếng Việt UTF-8
+                let csvContent = "\uFEFF";
+                csvContent += "Thời gian,Họ Tên,Lớp,Điểm\n";
+
+                results.forEach(row => {
+                    // Xử lý chuỗi để tránh lỗi CSV nếu tên có dấu phẩy
+                    const safeName = `"${row.name.replace(/"/g, '""')}"`;
+                    const safeClass = `"${row.class.replace(/"/g, '""')}"`;
+                    csvContent += `${row.time},${safeName},${safeClass},${row.score}\n`;
+                });
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "ket_qua_hoa_hoc_12.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+
+            // --- CONFIRM MODALS INSTEAD OF NATIVE CONFIRM ---
+
+            confirmClearAll() {
+                const actions = `
+                    <button onclick="view.hideModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Hủy</button>
+                    <button onclick="admin.executeClearAll()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-bold">Xóa Ngay</button>
+                `;
+                view.showModal("Xóa dữ liệu?", "<p>Bạn có chắc chắn muốn xóa TOÀN BỘ kết quả của TẤT CẢ các lớp không? Hành động này không thể hoàn tác.</p>", actions);
+            },
+
+            executeClearAll() {
+                localStorage.removeItem(this.storageKey);
+                this.loadData();
+                view.hideModal();
+                view.showAlert("Đã xóa dữ liệu thành công.");
+            },
+
+            confirmDeleteClass() {
+                const classInput = document.getElementById('del-class-input');
+                const className = classInput.value.trim();
+                
+                if (!className) {
+                    view.showAlert("Vui lòng nhập tên lớp cần xóa!");
+                    classInput.focus();
+                    return;
+                }
+
+                const actions = `
+                    <button onclick="view.hideModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Hủy</button>
+                    <button onclick="admin.executeDeleteClass('${className}')" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 font-bold">Xóa</button>
+                `;
+                view.showModal("Xóa lớp?", `<p>Bạn có chắc chắn muốn xóa dữ liệu của lớp <strong>"${className}"</strong> không?</p><p class="text-sm text-gray-500 mt-1">Các lớp khác sẽ được giữ lại.</p>`, actions);
+            },
+
+            executeDeleteClass(className) {
+                let results = JSON.parse(localStorage.getItem(this.storageKey) || "[]");
+                const originalCount = results.length;
+                
+                // Lọc và giữ lại những học sinh KHÔNG thuộc lớp bị xóa
+                const newResults = results.filter(r => r.class.toLowerCase() !== className.toLowerCase());
+                
+                view.hideModal();
+
+                if (newResults.length === originalCount) {
+                    view.showAlert(`Không tìm thấy dữ liệu nào của lớp "${className}".`);
+                } else {
+                    localStorage.setItem(this.storageKey, JSON.stringify(newResults));
+                    this.loadData();
+                    document.getElementById('del-class-input').value = "";
+                    view.showAlert(`Đã xóa ${originalCount - newResults.length} kết quả của lớp ${className}.`);
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>
